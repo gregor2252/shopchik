@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Админ-панель</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="admin-app">
+        <header>
+            <h1>Админ-панель</h1>
+            <div class="admin-actions">
+                <button onclick="showProductForm()" class="btn btn-primary">Добавить товар</button>
+                <button onclick="showBroadcastForm()" class="btn btn-secondary">Рассылка</button>
+            </div>
+        </header>
+
+        <main>
+            <div id="products" class="products-grid admin-grid"></div>
+        </main>
+
+        <!-- Product Form Modal -->
+        <div id="productModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal()">&times;</span>
+                <h2 id="modalTitle">Добавить товар</h2>
+                <form id="productForm">
+                    <input type="hidden" id="productId">
+                    <div class="form-group">
+                        <label>Название:</label>
+                        <input type="text" id="productName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Описание:</label>
+                        <textarea id="productDescription" rows="4" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Цена:</label>
+                        <input type="number" id="productPrice" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Фото (можно выбрать несколько):</label>
+                        <input type="file" id="productPhotos" multiple accept="image/*">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Сохранить</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Broadcast Form Modal -->
+        <div id="broadcastModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeBroadcastModal()">&times;</span>
+                <h2>Создать рассылку</h2>
+                <form id="broadcastForm">
+                    <div class="form-group">
+                        <label>Сообщение:</label>
+                        <textarea id="broadcastMessage" rows="4" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Фото (опционально):</label>
+                        <input type="file" id="broadcastPhoto" accept="image/*">
+                    </div>
+                    <div class="form-group">
+                        <label>Время отправки (опционально):</label>
+                        <input type="datetime-local" id="broadcastTime">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Отправить</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="admin.js"></script>
+</body>
+</html>
