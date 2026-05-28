@@ -3,11 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
     <title>Магазин</title>
-    <link rel="stylesheet" href="style.css?v=2">
+    <link rel="stylesheet" href="style.css">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
@@ -17,6 +14,31 @@
             <div class="search-box">
                 <input type="text" id="search" placeholder="Поиск товаров..." class="search-input">
             </div>
+            
+            <!-- Фильтр по цене -->
+            <div class="filter-section">
+                <button class="filter-toggle" onclick="toggleFilter()">Фильтр по цене ▼</button>
+                <div id="priceFilter" class="price-filter" style="display: none;">
+                    <div class="price-inputs">
+                        <div class="price-input-group">
+                            <label>От</label>
+                            <input type="number" id="minPrice" placeholder="0" step="100" class="price-input">
+                        </div>
+                        <div class="price-input-group">
+                            <label>До</label>
+                            <input type="number" id="maxPrice" placeholder="99999" step="100" class="price-input">
+                        </div>
+                        <button onclick="applyPriceFilter()" class="btn-filter">Применить</button>
+                        <button onclick="clearPriceFilter()" class="btn-filter btn-clear">Сбросить</button>
+                    </div>
+                    <div class="price-presets">
+                        <button onclick="setPriceRange(0, 1000)" class="preset-btn">до 1000 ₽</button>
+                        <button onclick="setPriceRange(1000, 5000)" class="preset-btn">1000-5000 ₽</button>
+                        <button onclick="setPriceRange(5000, 10000)" class="preset-btn">5000-10000 ₽</button>
+                        <button onclick="setPriceRange(10000, 50000)" class="preset-btn">10000-50000 ₽</button>
+                    </div>
+                </div>
+            </div>
         </header>
 
         <main>
@@ -25,6 +47,6 @@
         </main>
     </div>
 
-    <script src="script.js?v=2"></script>
+    <script src="script.js"></script>
 </body>
 </html>
