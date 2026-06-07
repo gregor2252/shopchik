@@ -19,7 +19,7 @@ async def process_broadcast(broadcast_id: int):
     async with pool.acquire() as conn:
         broadcast = await conn.fetchrow("SELECT * FROM broadcasts WHERE id = $1", broadcast_id)
         if not broadcast or broadcast['status'] != 'pending':
-            return
+            return {"sent": 0, "failed": 0}
         
         message = broadcast['message']
         photo_url = broadcast['photo_url']
@@ -39,6 +39,7 @@ async def process_broadcast(broadcast_id: int):
         
         await update_broadcast_status(broadcast_id, 'completed', sent, failed)
         logger.info(f"Broadcast {broadcast_id} completed: sent={sent}, failed={failed}")
+        return {"sent": sent, "failed": failed}
 
 async def schedule_broadcast(broadcast_id: int, scheduled_time: str = None):
     """Schedule a broadcast"""
@@ -55,7 +56,7 @@ async def schedule_broadcast(broadcast_id: int, scheduled_time: str = None):
         logger.info(f"Scheduled broadcast {broadcast_id} at {run_date}")
     else:
         # Run immediately
-        await process_broadcast(broadcast_id)
+        return await process_broadcast(broadcast_id)
 
 def start_scheduler():
     """Start the scheduler"""

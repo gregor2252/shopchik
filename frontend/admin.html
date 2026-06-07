@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Админ-панель</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=20260603-categories-sizes">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
     <div class="admin-app">
@@ -13,11 +14,16 @@
             <div class="admin-actions">
                 <button onclick="showProductForm()" class="btn btn-primary">Добавить товар</button>
                 <button onclick="showBroadcastForm()" class="btn btn-secondary">Рассылка</button>
+                <button onclick="toggleBroadcastHistory()" class="btn btn-secondary">История</button>
             </div>
         </header>
 
         <main>
             <div id="products" class="products-grid admin-grid"></div>
+            <section id="broadcastHistory" class="broadcast-history" style="display: none;">
+                <h2>История рассылок</h2>
+                <div id="broadcastHistoryList"></div>
+            </section>
         </main>
 
         <!-- Product Form Modal -->
@@ -32,6 +38,22 @@
                         <input type="text" id="productName" required>
                     </div>
                     <div class="form-group">
+                        <label>Бренд (опционально):</label>
+                        <input type="text" id="productBrand" maxlength="100" placeholder="Например: Nike">
+                    </div>
+                    <div class="form-group">
+                        <label>Категория:</label>
+                        <select id="productCategory" class="form-select">
+                            <option value="">Без категории</option>
+                            <option value="tshirts">Футболки</option>
+                            <option value="hoodies">Худи</option>
+                            <option value="pants">Штаны</option>
+                            <option value="jackets">Куртки</option>
+                            <option value="shoes">Обувь</option>
+                            <option value="accessories">Аксессуары</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
                         <label>Описание:</label>
                         <textarea id="productDescription" rows="4" required></textarea>
                     </div>
@@ -40,8 +62,25 @@
                         <input type="number" id="productPrice" step="0.01" required>
                     </div>
                     <div class="form-group">
+                        <label>Старая цена (опционально):</label>
+                        <input type="number" id="productOldPrice" step="0.01" placeholder="Оставьте пустым, если скидки нет">
+                    </div>
+                    <div class="form-group">
+                        <label>Размеры (опционально):</label>
+                        <input type="text" id="productSizes" maxlength="200" placeholder="Например: S, M, L, XL или 40, 41, 42">
+                    </div>
+                    <div class="form-group">
                         <label>Фото (можно выбрать несколько):</label>
+                        <div id="currentProductPhotosBlock" style="display: none;">
+                            <div class="field-hint">Текущие фото</div>
+                            <div id="currentProductPhotos" class="product-photos-preview"></div>
+                        </div>
                         <input type="file" id="productPhotos" multiple accept="image/*">
+                        <div class="file-actions">
+                            <span id="productPhotosName" class="file-name">Фото не выбраны</span>
+                            <button type="button" class="btn btn-secondary btn-small" onclick="clearProductPhotos()">Убрать фото</button>
+                        </div>
+                        <div id="productPhotosPreview" class="product-photos-preview"></div>
                     </div>
                     <button type="submit" class="btn btn-primary">Сохранить</button>
                 </form>
@@ -61,6 +100,11 @@
                     <div class="form-group">
                         <label>Фото (опционально):</label>
                         <input type="file" id="broadcastPhoto" accept="image/*">
+                        <div class="file-actions">
+                            <span id="broadcastPhotoName" class="file-name">Фото не выбрано</span>
+                            <button type="button" class="btn btn-secondary btn-small" onclick="clearBroadcastPhoto()">Убрать фото</button>
+                        </div>
+                        <img id="broadcastPhotoPreview" class="broadcast-photo-preview" alt="Предпросмотр фото" style="display: none;">
                     </div>
                     <div class="form-group">
                         <label>Время отправки (опционально):</label>
@@ -72,6 +116,6 @@
         </div>
     </div>
 
-    <script src="admin.js"></script>
+    <script src="admin.js?v=20260603-categories-sizes"></script>
 </body>
 </html>

@@ -32,6 +32,7 @@ services:
       DB_NAME: ${DB_NAME}
       WEBAPP_URL: ${WEBAPP_URL}
       ADMIN_URL: ${ADMIN_URL}
+      MANAGER_USERNAME: ${MANAGER_USERNAME}
     volumes:
       - ./backend:/app
       - uploads:/app/uploads

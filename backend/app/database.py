@@ -1,7 +1,7 @@
 import os
 import asyncpg
 import logging
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -49,11 +49,32 @@ async def init_db():
                     name VARCHAR(255) NOT NULL,
                     description TEXT,
                     price DECIMAL(10, 2) NOT NULL,
+                    old_price DECIMAL(10, 2),
                     photos TEXT[] DEFAULT '{}',
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     is_active BOOLEAN DEFAULT TRUE
                 )
+            """)
+            await conn.execute("""
+                ALTER TABLE products
+                ADD COLUMN IF NOT EXISTS old_price DECIMAL(10, 2)
+            """)
+            await conn.execute("""
+                ALTER TABLE products
+                ADD COLUMN IF NOT EXISTS size VARCHAR(50)
+            """)
+            await conn.execute("""
+                ALTER TABLE products
+                ADD COLUMN IF NOT EXISTS sizes TEXT[] DEFAULT '{}'
+            """)
+            await conn.execute("""
+                ALTER TABLE products
+                ADD COLUMN IF NOT EXISTS category VARCHAR(50)
+            """)
+            await conn.execute("""
+                ALTER TABLE products
+                ADD COLUMN IF NOT EXISTS brand VARCHAR(100)
             """)
 
             # Broadcasts table
@@ -111,10 +132,13 @@ async def get_products(
     search: str = None,
     min_price: float = None,
     max_price: float = None,
+    sizes: Optional[List[str]] = None,
+    categories: Optional[List[str]] = None,
+    sort: str = None,
     limit: int = 100,
     offset: int = 0,
 ) -> List[Dict]:
-    """Get products with optional search and price filters"""
+    """Get products with optional search, filters and sorting"""
     async with pool.acquire() as conn:
         query = """
             SELECT * FROM products
@@ -140,7 +164,33 @@ async def get_products(
             params.append(max_price)
             param_index += 1
 
-        query += f" ORDER BY id DESC LIMIT ${param_index} OFFSET ${param_index + 1}"
+        if sizes:
+            query += f"""
+                AND EXISTS (
+                    SELECT 1
+                    FROM unnest(
+                        string_to_array(
+                            array_to_string(COALESCE(sizes, ARRAY[]::text[]) || ARRAY[COALESCE(size, '')], ','),
+                            ','
+                        )
+                    ) product_size
+                    WHERE LOWER(product_size) = ANY(${param_index})
+                )
+            """
+            params.append([size.lower() for size in sizes])
+            param_index += 1
+
+        if categories:
+            query += f" AND LOWER(category) = ANY(${param_index})"
+            params.append([category.lower() for category in categories])
+            param_index += 1
+
+        order_by = {
+            "price_asc": "price ASC, id DESC",
+            "price_desc": "price DESC, id DESC",
+        }.get(sort, "id DESC")
+
+        query += f" ORDER BY {order_by} LIMIT ${param_index} OFFSET ${param_index + 1}"
         params.extend([limit, offset])
 
         rows = await conn.fetch(query, *params)
@@ -161,38 +211,63 @@ async def get_product(product_id: int) -> Optional[Dict]:
 
 
 async def create_product(
-    name: str, description: str, price: float, photos: List[str]
+    name: str,
+    description: str,
+    price: float,
+    old_price: Optional[float],
+    brand: Optional[str],
+    category: Optional[str],
+    sizes: List[str],
+    photos: List[str],
 ) -> int:
     """Create new product"""
     async with pool.acquire() as conn:
         row = await conn.fetchrow(
             """
-            INSERT INTO products (name, description, price, photos)
-            VALUES ($1, $2, $3, $4)
+            INSERT INTO products (name, description, price, old_price, brand, category, size, sizes, photos)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
             RETURNING id
         """,
             name,
             description,
             price,
+            old_price,
+            brand,
+            category,
+            sizes[0] if sizes else None,
+            sizes,
             photos,
         )
         return row["id"]
 
 
 async def update_product(
-    product_id: int, name: str, description: str, price: float, photos: List[str]
+    product_id: int,
+    name: str,
+    description: str,
+    price: float,
+    old_price: Optional[float],
+    brand: Optional[str],
+    category: Optional[str],
+    sizes: List[str],
+    photos: List[str],
 ):
     """Update existing product"""
     async with pool.acquire() as conn:
         await conn.execute(
             """
             UPDATE products
-            SET name = $1, description = $2, price = $3, photos = $4, updated_at = CURRENT_TIMESTAMP
-            WHERE id = $5
+            SET name = $1, description = $2, price = $3, old_price = $4, brand = $5, category = $6, size = $7, sizes = $8, photos = $9, updated_at = CURRENT_TIMESTAMP
+            WHERE id = $10
         """,
             name,
             description,
             price,
+            old_price,
+            brand,
+            category,
+            sizes[0] if sizes else None,
+            sizes,
             photos,
             product_id,
         )
@@ -239,6 +314,21 @@ async def get_pending_broadcasts():
             AND (scheduled_time IS NULL OR scheduled_time <= CURRENT_TIMESTAMP)
             ORDER BY scheduled_time NULLS FIRST
         """)
+        return [dict(row) for row in rows]
+
+
+async def get_broadcasts(limit: int = 50):
+    """Get recent broadcasts."""
+    async with pool.acquire() as conn:
+        rows = await conn.fetch(
+            """
+            SELECT *
+            FROM broadcasts
+            ORDER BY id DESC
+            LIMIT $1
+            """,
+            limit,
+        )
         return [dict(row) for row in rows]
 
 

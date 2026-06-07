@@ -4,21 +4,124 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Магазин</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=20260606-store-banner">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
     <div class="app">
-        <header>
-            <h1>Каталог товаров</h1>
+        <header class="app-header">
+            <div class="store-banner">
+                <img src="images/banner-matched.jpg" alt="Finess Shop">
+            </div>
+
             <div class="search-box">
                 <input type="text" id="search" placeholder="Поиск товаров..." class="search-input">
             </div>
+
+            <div class="category-tabs" aria-label="Разделы каталога">
+                <button class="category-tab active" onclick="setCategorySection('')" type="button" data-category="">
+                    <span class="category-icon" aria-hidden="true">
+                        <img src="icons/box-open-svgrepo-com.svg" alt="">
+                    </span>
+                    <span>Все</span>
+                </button>
+                <button class="category-tab" onclick="setCategorySection('tshirts')" type="button" data-category="tshirts">
+                    <span class="category-icon" aria-hidden="true">
+                        <img src="icons/shirt.svg" alt="">
+                    </span>
+                    <span>Футболки</span>
+                </button>
+                <button class="category-tab" onclick="setCategorySection('hoodies')" type="button" data-category="hoodies">
+                    <span class="category-icon" aria-hidden="true">
+                        <img src="icons/hoodie-svgrepo-com.svg" alt="">
+                    </span>
+                    <span>Худи</span>
+                </button>
+                <button class="category-tab" onclick="setCategorySection('pants')" type="button" data-category="pants">
+                    <span class="category-icon" aria-hidden="true">
+                        <img src="icons/clothes-pants-svgrepo-com.svg" alt="">
+                    </span>
+                    <span>Штаны</span>
+                </button>
+                <button class="category-tab" onclick="setCategorySection('jackets')" type="button" data-category="jackets">
+                    <span class="category-icon" aria-hidden="true">
+                        <img src="icons/jacket-svgrepo-com.svg" alt="">
+                    </span>
+                    <span>Куртки</span>
+                </button>
+                <button class="category-tab" onclick="setCategorySection('shoes')" type="button" data-category="shoes">
+                    <span class="category-icon" aria-hidden="true">
+                        <img src="icons/sneakers-svgrepo-com.svg" alt="">
+                    </span>
+                    <span>Обувь</span>
+                </button>
+                <button class="category-tab" onclick="setCategorySection('accessories')" type="button" data-category="accessories">
+                    <span class="category-icon" aria-hidden="true">
+                        <img src="icons/shopping-bag-svgrepo-com.svg" alt="">
+                    </span>
+                    <span>Аксессуары</span>
+                </button>
+            </div>
             
-            <!-- Фильтр по цене -->
             <div class="filter-section">
-                <button class="filter-toggle" onclick="toggleFilter()">Фильтр по цене ▼</button>
+                <div class="filter-toolbar">
+                    <button class="filter-toggle" onclick="toggleFilter()" type="button">
+                        <span class="filter-icon" aria-hidden="true">☰</span>
+                        <span>Фильтры</span>
+                        <span id="filterCount" class="filter-count" style="display: none;">0</span>
+                    </button>
+                    <div class="sort-dropdown" id="sortDropdown">
+                        <button class="sort-toggle" onclick="toggleSortMenu()" type="button" aria-haspopup="listbox" aria-expanded="false">
+                            <span id="sortLabel">Популярные</span>
+                            <span class="sort-arrow" aria-hidden="true"></span>
+                        </button>
+                        <div class="sort-menu" id="sortMenu" role="listbox" style="display: none;">
+                            <button class="sort-option active" onclick="setSort('default')" type="button" data-sort="default" role="option">Популярные</button>
+                            <button class="sort-option" onclick="setSort('price_asc')" type="button" data-sort="price_asc" role="option">Сначала дешевле</button>
+                            <button class="sort-option" onclick="setSort('price_desc')" type="button" data-sort="price_desc" role="option">Сначала дороже</button>
+                        </div>
+                    </div>
+                </div>
+                <div id="filterChips" class="filter-chips"></div>
+                <button id="clearAllFilters" class="clear-all-filters" onclick="clearAllFilters()" type="button" style="display: none;">Сбросить все</button>
                 <div id="priceFilter" class="price-filter" style="display: none;">
+                    <div class="filter-sheet-header">
+                        <div class="filter-title">Фильтры</div>
+                        <button class="filter-close" onclick="closePriceFilter()" type="button" aria-label="Закрыть фильтры">×</button>
+                    </div>
+                    <div class="filter-group">
+                        <div class="filter-label">Разделы</div>
+                        <div class="category-filter-options">
+                            <button onclick="toggleCategoryFilter('tshirts')" class="category-filter-option" type="button" data-category="tshirts">Футболки</button>
+                            <button onclick="toggleCategoryFilter('hoodies')" class="category-filter-option" type="button" data-category="hoodies">Худи</button>
+                            <button onclick="toggleCategoryFilter('pants')" class="category-filter-option" type="button" data-category="pants">Штаны</button>
+                            <button onclick="toggleCategoryFilter('jackets')" class="category-filter-option" type="button" data-category="jackets">Куртки</button>
+                            <button onclick="toggleCategoryFilter('shoes')" class="category-filter-option" type="button" data-category="shoes">Обувь</button>
+                            <button onclick="toggleCategoryFilter('accessories')" class="category-filter-option" type="button" data-category="accessories">Аксессуары</button>
+                        </div>
+                    </div>
+                    <div class="filter-group">
+                        <div class="filter-label">Размер</div>
+                        <div class="size-options">
+                            <button onclick="setSizeFilter('XS')" class="size-option" type="button">XS</button>
+                            <button onclick="setSizeFilter('S')" class="size-option" type="button">S</button>
+                            <button onclick="setSizeFilter('M')" class="size-option" type="button">M</button>
+                            <button onclick="setSizeFilter('L')" class="size-option" type="button">L</button>
+                            <button onclick="setSizeFilter('XL')" class="size-option" type="button">XL</button>
+                            <button onclick="setSizeFilter('XXL')" class="size-option" type="button">XXL</button>
+                            <button onclick="setSizeFilter('37')" class="size-option" type="button">37</button>
+                            <button onclick="setSizeFilter('38')" class="size-option" type="button">38</button>
+                            <button onclick="setSizeFilter('39')" class="size-option" type="button">39</button>
+                            <button onclick="setSizeFilter('40')" class="size-option" type="button">40</button>
+                            <button onclick="setSizeFilter('41')" class="size-option" type="button">41</button>
+                            <button onclick="setSizeFilter('42')" class="size-option" type="button">42</button>
+                            <button onclick="setSizeFilter('43')" class="size-option" type="button">43</button>
+                            <button onclick="setSizeFilter('44')" class="size-option" type="button">44</button>
+                            <button onclick="setSizeFilter('45')" class="size-option" type="button">45</button>
+                        </div>
+                    </div>
+                    <div class="filter-group">
+                        <div class="filter-label">Цена</div>
                     <div class="price-inputs">
                         <div class="price-input-group">
                             <label>От</label>
@@ -32,21 +135,24 @@
                         <button onclick="clearPriceFilter()" class="btn-filter btn-clear">Сбросить</button>
                     </div>
                     <div class="price-presets">
-                        <button onclick="setPriceRange(0, 1000)" class="preset-btn">до 1000 ₽</button>
                         <button onclick="setPriceRange(1000, 5000)" class="preset-btn">1000-5000 ₽</button>
                         <button onclick="setPriceRange(5000, 10000)" class="preset-btn">5000-10000 ₽</button>
-                        <button onclick="setPriceRange(10000, 50000)" class="preset-btn">10000-50000 ₽</button>
+                        <button onclick="setPriceRange(10000, 20000)" class="preset-btn">10000-20000 ₽</button>
+                    </div>
                     </div>
                 </div>
             </div>
         </header>
 
-        <main>
+        <main id="catalogView">
             <div id="products" class="products-grid"></div>
             <div id="loading" class="loading" style="display: none;">Загрузка...</div>
+            <button id="loadMoreProducts" class="load-more-btn" onclick="loadMoreProducts()" type="button" style="display: none;">Показать ещё</button>
         </main>
+
+        <main id="productDetailView" class="product-detail-view" style="display: none;"></main>
     </div>
 
-    <script src="script.js"></script>
+    <script src="script.js?v=20260606-pagination"></script>
 </body>
 </html>

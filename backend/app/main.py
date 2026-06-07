@@ -57,6 +57,11 @@ app.include_router(webapp_router, prefix="/api")
 # Mount static files for uploads
 app.mount("/uploads", StaticFiles(directory="/app/uploads"), name="uploads")
 
+
+@app.get("/health")
+async def healthcheck():
+    return {"status": "ok"}
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
