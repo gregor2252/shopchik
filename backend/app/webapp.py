@@ -1,14 +1,16 @@
 import os
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Header, HTTPException, Query
 from typing import List, Optional
 from .database import get_products, get_product
+from .telegram_auth import verify_telegram_init_data
 
 router = APIRouter()
 
 @router.get("/config")
-async def webapp_get_config():
+async def webapp_get_config(x_telegram_init_data: str = Header("")):
     """Get public WebApp configuration."""
+    verify_telegram_init_data(x_telegram_init_data)
     return {
         "manager_username": os.getenv("MANAGER_USERNAME", "").strip().lstrip("@")
     }
@@ -22,9 +24,11 @@ async def webapp_get_products(
     category: Optional[List[str]] = Query(None, description="Категория"),
     sort: Optional[str] = Query(None, pattern="^(default|price_asc|price_desc)$", description="Сортировка"),
     limit: int = 100,
-    offset: int = 0
+    offset: int = 0,
+    x_telegram_init_data: str = Header("")
 ):
     """Get products for WebApp with filters and sorting"""
+    verify_telegram_init_data(x_telegram_init_data)
     products = await get_products(search, min_price, max_price, size, category, sort, limit, offset)
     return {
         "products": products,
@@ -32,8 +36,9 @@ async def webapp_get_products(
     }
 
 @router.get("/products/{product_id}")
-async def webapp_get_product(product_id: int):
+async def webapp_get_product(product_id: int, x_telegram_init_data: str = Header("")):
     """Get single product for WebApp"""
+    verify_telegram_init_data(x_telegram_init_data)
     product = await get_product(product_id)
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")

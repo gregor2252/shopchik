@@ -1636,6 +1636,33 @@ h1 {
     color: #ffffff;
 }
 
+.telegram-only {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: #0b0d10;
+    color: #ffffff;
+    text-align: center;
+}
+
+.telegram-only-panel {
+    max-width: 360px;
+}
+
+.telegram-only-panel h1 {
+    margin-bottom: 12px;
+    font-size: 24px;
+    line-height: 1.15;
+}
+
+.telegram-only-panel p {
+    color: #b6bbc4;
+    font-size: 16px;
+    line-height: 1.45;
+}
+
 @media (min-width: 560px) {
     .products-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));

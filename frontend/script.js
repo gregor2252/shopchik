@@ -1,4 +1,22 @@
-let tg = window.Telegram.WebApp;
+const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
+const initData = tg ? tg.initData : '';
+
+function renderTelegramOnlyMessage() {
+    document.body.innerHTML = `
+        <main class="telegram-only">
+            <section class="telegram-only-panel">
+                <h1>Откройте магазин в Telegram</h1>
+                <p>Каталог доступен только через кнопку в Telegram-боте.</p>
+            </section>
+        </main>
+    `;
+}
+
+if (!initData) {
+    renderTelegramOnlyMessage();
+    throw new Error('Telegram WebApp initData is missing');
+}
+
 tg.expand();
 
 const API_BASE = '/api';
@@ -44,9 +62,17 @@ const SORT_LABELS = {
     price_desc: 'Сначала дороже'
 };
 
+function getAuthHeaders() {
+    return {
+        'X-Telegram-Init-Data': initData
+    };
+}
+
 async function loadAppConfig() {
     try {
-        const response = await fetch(`${API_BASE}/config`);
+        const response = await fetch(`${API_BASE}/config`, {
+            headers: getAuthHeaders()
+        });
         if (!response.ok) return;
 
         const config = await response.json();
@@ -108,7 +134,9 @@ async function loadProducts({ append = false } = {}) {
         
         url += params.join('&');
         
-        const response = await fetch(url);
+        const response = await fetch(url, {
+            headers: getAuthHeaders()
+        });
         const data = await response.json();
         const responseProducts = data.products || [];
         const loadedProducts = responseProducts.slice(0, productsPagination.limit);
@@ -354,7 +382,9 @@ async function showProductDetail(productId) {
 
 async function fetchProduct(productId) {
     try {
-        const response = await fetch(`${API_BASE}/products/${productId}`);
+        const response = await fetch(`${API_BASE}/products/${productId}`, {
+            headers: getAuthHeaders()
+        });
         if (!response.ok) return null;
         return await response.json();
     } catch (error) {
