@@ -676,6 +676,9 @@ function showDetailView() {
     document.querySelector('header').style.display = 'none';
     document.getElementById('catalogView').style.display = 'none';
     document.getElementById('productDetailView').style.display = 'block';
+    requestAnimationFrame(() => {
+        window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+    });
 
     if (tg.BackButton) {
         tg.BackButton.offClick(closeProductDetail);
