@@ -5,7 +5,7 @@ from pathlib import Path
 from fastapi import APIRouter, HTTPException, UploadFile, File, Form, Header, Request
 from typing import List, Optional
 import aiofiles
-from PIL import Image
+from PIL import Image, ImageOps
 
 try:
     from pillow_heif import register_heif_opener
@@ -62,7 +62,7 @@ async def save_uploaded_images(photos: Optional[List[UploadFile]], prefix: str =
         content = await photo.read()
 
         try:
-            image = Image.open(BytesIO(content))
+            image = ImageOps.exif_transpose(Image.open(BytesIO(content)))
             if image.mode not in ("RGB", "L"):
                 image = image.convert("RGB")
             elif image.mode == "L":
