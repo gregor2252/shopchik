@@ -559,7 +559,7 @@ h2 {
     overflow-x: auto;
     scroll-snap-type: x mandatory;
     scrollbar-width: none;
-    touch-action: pan-y pinch-zoom;
+    touch-action: pan-x pan-y pinch-zoom;
     -webkit-overflow-scrolling: touch;
 }
 
@@ -729,7 +729,7 @@ h2 {
     position: relative;
     width: calc(100% + 24px);
     margin-left: -12px;
-    aspect-ratio: 1 / 1;
+    aspect-ratio: 3 / 4;
     overflow: hidden;
     background: var(--surface);
     box-shadow: var(--shadow-soft);

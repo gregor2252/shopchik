@@ -32,6 +32,7 @@ let currentFilters = {
 let currentProduct = null;
 let currentPhotoIndex = 0;
 let cardSwipeStarted = false;
+let catalogPhotoClickBlocked = false;
 let photoViewerScale = 1;
 let photoViewerOffsetX = 0;
 let photoViewerOffsetY = 0;
@@ -259,7 +260,7 @@ function renderCatalogPhotos(product) {
 
     return `
         <div class="catalog-photo-carousel">
-            <div class="catalog-photo-strip" onscroll="updateCatalogPhotoState(event)" onpointerdown="startCatalogPhotoSwipe(event)" onpointermove="moveCatalogPhotoSwipe(event)" onpointerup="endCatalogPhotoSwipe(event)" onpointercancel="cancelCatalogPhotoSwipe()">
+            <div class="catalog-photo-strip" onscroll="updateCatalogPhotoState(event)" onclick="handleCatalogPhotoClick(event)" onpointerdown="startCatalogPhotoSwipe(event)" onpointermove="moveCatalogPhotoSwipe(event)" onpointerup="endCatalogPhotoSwipe(event)" onpointercancel="cancelCatalogPhotoSwipe()" ontouchstart="startCatalogPhotoTouch(event)" ontouchmove="moveCatalogPhotoTouch(event)" ontouchend="endCatalogPhotoTouch(event)" ontouchcancel="cancelCatalogPhotoSwipe()">
                 ${photos.map((photo, index) => `
                     <img src="${escapeAttribute(photo)}" alt="${escapeAttribute(product.name)} ${index + 1}" class="catalog-photo-slide">
                 `).join('')}
@@ -294,15 +295,30 @@ function updateCatalogPhotoState(event) {
     });
 }
 
+function getCatalogSwipePoint(event) {
+    const touch = event.changedTouches && event.changedTouches[0]
+        ? event.changedTouches[0]
+        : event.touches && event.touches[0]
+            ? event.touches[0]
+            : event;
+
+    return {
+        x: touch.clientX,
+        y: touch.clientY
+    };
+}
+
 function startCatalogPhotoSwipe(event) {
     const strip = event.currentTarget;
     if (!strip || !strip.clientWidth) return;
 
+    const point = getCatalogSwipePoint(event);
     cardSwipeStarted = {
-        x: event.clientX,
-        y: event.clientY,
+        x: point.x,
+        y: point.y,
         index: Math.round(strip.scrollLeft / strip.clientWidth),
-        width: strip.clientWidth
+        width: strip.clientWidth,
+        moved: false
     };
 }
 
@@ -310,8 +326,9 @@ function endCatalogPhotoSwipe(event) {
     if (!cardSwipeStarted) return;
 
     const strip = event.currentTarget;
-    const deltaX = event.clientX - cardSwipeStarted.x;
-    const deltaY = event.clientY - cardSwipeStarted.y;
+    const point = getCatalogSwipePoint(event);
+    const deltaX = point.x - cardSwipeStarted.x;
+    const deltaY = point.y - cardSwipeStarted.y;
     const absDeltaX = Math.abs(deltaX);
     const absDeltaY = Math.abs(deltaY);
     const startIndex = cardSwipeStarted.index;
@@ -323,6 +340,10 @@ function endCatalogPhotoSwipe(event) {
         const direction = deltaX < 0 ? 1 : -1;
         const nextIndex = Math.min(maxIndex, Math.max(0, startIndex + direction));
 
+        catalogPhotoClickBlocked = true;
+        window.setTimeout(() => {
+            catalogPhotoClickBlocked = false;
+        }, 350);
         event.preventDefault();
         event.stopPropagation();
         strip.scrollTo({
@@ -335,16 +356,39 @@ function endCatalogPhotoSwipe(event) {
 function moveCatalogPhotoSwipe(event) {
     if (!cardSwipeStarted) return;
 
-    const deltaX = Math.abs(event.clientX - cardSwipeStarted.x);
-    const deltaY = Math.abs(event.clientY - cardSwipeStarted.y);
+    const point = getCatalogSwipePoint(event);
+    const deltaX = Math.abs(point.x - cardSwipeStarted.x);
+    const deltaY = Math.abs(point.y - cardSwipeStarted.y);
 
     if (deltaX > 8 && deltaX > deltaY) {
+        cardSwipeStarted.moved = true;
         event.preventDefault();
+        event.stopPropagation();
     }
 }
 
 function cancelCatalogPhotoSwipe() {
     cardSwipeStarted = false;
+}
+
+function startCatalogPhotoTouch(event) {
+    event.stopPropagation();
+    startCatalogPhotoSwipe(event);
+}
+
+function moveCatalogPhotoTouch(event) {
+    moveCatalogPhotoSwipe(event);
+}
+
+function endCatalogPhotoTouch(event) {
+    endCatalogPhotoSwipe(event);
+}
+
+function handleCatalogPhotoClick(event) {
+    if (!catalogPhotoClickBlocked) return;
+
+    event.preventDefault();
+    event.stopPropagation();
 }
 
 function handleProductCardKey(event, productId) {
