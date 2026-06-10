@@ -520,6 +520,20 @@ h2 {
     transition: border-color 0.16s ease, box-shadow 0.16s ease, transform 0.16s ease;
 }
 
+.product-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    border-radius: inherit;
+    padding: 2px;
+    background: linear-gradient(180deg, rgba(240, 189, 99, 0.12), rgba(240, 189, 99, 0.24) 48%, rgba(240, 189, 99, 0.62));
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+}
+
 .product-card:focus {
     outline: none;
     box-shadow: 0 0 0 3px rgba(47, 141, 216, 0.14), var(--shadow-soft);
@@ -1001,6 +1015,10 @@ h2 {
     border: 1px solid var(--line);
     border-radius: 8px;
     box-shadow: var(--shadow-soft);
+}
+
+.admin-grid .product-card::before {
+    display: none;
 }
 
 .admin-grid .product-card:hover {
